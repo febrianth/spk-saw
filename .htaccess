@@ -1,0 +1,2 @@
+ErrorDocument 404 /spk-saw/views/404.php
+Options -Indexes
