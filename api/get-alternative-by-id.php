@@ -18,7 +18,7 @@ try {
     $pdo = Database::getConnection();
 
     // --- LANGKAH 1: Ambil data dasar alternatif ---
-    $stmt = $pdo->prepare("SELECT id, code, name FROM alternatives WHERE id = ? AND deleted_at IS NULL");
+    $stmt = $pdo->prepare("SELECT id, code, name FROM alternatives WHERE id = ?");
     $stmt->execute([$id]);
     $alternative = $stmt->fetch(PDO::FETCH_ASSOC);
 

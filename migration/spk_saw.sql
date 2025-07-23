@@ -29,11 +29,10 @@ SET time_zone = "+00:00";
 
 CREATE TABLE `alternatives` (
   `id` int NOT NULL,
-  `name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `name` varchar(50) NOT NULL,
   `code` varchar(10) DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `deleted_at` timestamp NULL DEFAULT NULL
 );
 
 -- --------------------------------------------------------
@@ -44,7 +43,7 @@ CREATE TABLE `alternatives` (
 
 CREATE TABLE `criterias` (
   `id` int NOT NULL,
-  `name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `name` varchar(50) NOT NULL,
   `code` varchar(10) NOT NULL,
   `weight` decimal(5,2) NOT NULL,
   `attribute` enum('benefit','cost') NOT NULL DEFAULT 'benefit',
@@ -88,7 +87,7 @@ CREATE TABLE `scores` (
 CREATE TABLE `sub_criterias` (
   `id` int NOT NULL,
   `criteria_id` int NOT NULL,
-  `name` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `name` varchar(50) NOT NULL,
   `value` decimal(5,2) NOT NULL,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
@@ -118,10 +117,10 @@ INSERT INTO `sub_criterias` (`id`, `criteria_id`, `name`, `value`, `created_at`,
 
 CREATE TABLE `users` (
   `id` int NOT NULL,
-  `name` varchar(30) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `name` varchar(30) NOT NULL,
   `email` varchar(100) NOT NULL,
-  `password` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
-  `role` enum('admin','operator') CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT 'operator',
+  `password` varchar(32) NOT NULL,
+  `role` enum('admin','operator') DEFAULT 'operator',
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `deleted_at` timestamp NULL DEFAULT NULL
@@ -202,8 +201,7 @@ ALTER TABLE `users`
 --
 -- Constraints for table `scores`
 --
-ALTER TABLE `scores`
-  ADD CONSTRAINT `scores_ibfk_1` FOREIGN KEY (`alternative_id`) REFERENCES `alternatives` (`id`) ON DELETE CASCADE,
+ALTER TABLE `scores` ADD CONSTRAINT `scores_ibfk_1` FOREIGN KEY (`alternative_id`) REFERENCES `alternatives` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `scores_ibfk_2` FOREIGN KEY (`criteria_id`) REFERENCES `criterias` (`id`) ON DELETE CASCADE;
 
 --

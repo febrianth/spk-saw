@@ -9,8 +9,7 @@ $id = $_POST['id'] ?? null;
 if (!$id) {
     echo json_encode([
         "status" => "error",
-        "message" => "ID tidak ditemukan",
-        "data" => null
+        "message" => "ID alternatif tidak boleh kosong."
     ]);
     exit;
 }
@@ -18,30 +17,24 @@ if (!$id) {
 try {
     $pdo = Database::getConnection();
 
-    $pdo->beginTransaction();
-
-    // 1. Soft delete alternatif
-    $stmt = $pdo->prepare("UPDATE alternatives SET deleted_at = NOW() WHERE id = ?");
+    $stmt = $pdo->prepare("DELETE FROM alternatives WHERE id = ?");
     $stmt->execute([$id]);
 
-    // 2. Hard delete skor terkait
-    $stmt = $pdo->prepare("DELETE FROM scores WHERE alternative_id = ?");
-    $stmt->execute([$id]);
-
-    $pdo->commit();
-
-    echo json_encode([
-        "status" => "success",
-        "message" => "Data alternatif berhasil dihapus dan skor dihapus",
-        "data" => null
-    ]);
+    if ($stmt->rowCount() > 0) {
+        echo json_encode([
+            "status" => "success",
+            "message" => "Data alternatif berhasil dihapus secara permanen."
+        ]);
+    } else {
+        echo json_encode([
+            "status" => "error",
+            "message" => "Data tidak ditemukan atau sudah dihapus."
+        ]);
+    }
 } catch (PDOException $e) {
-    // Rollback jika error
-    $pdo->rollBack();
-
+    http_response_code(500);
     echo json_encode([
         "status" => "error",
-        "message" => "Gagal menghapus data: " . $e->getMessage(),
-        "data" => null
+        "message" => "Gagal menghapus data: " . $e->getMessage()
     ]);
 }

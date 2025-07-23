@@ -10,7 +10,7 @@ try {
     // =========================================================================
     // LANGKAH 1: Ambil semua kriteria untuk header tabel dan mapping
     // =========================================================================
-    $stmt = $pdo->prepare("SELECT id, code, name FROM criterias ORDER BY id ASC");
+    $stmt = $pdo->prepare("SELECT id, code, name, input_type FROM criterias ORDER BY id ASC");
     $stmt->execute();
     $criterias = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -38,7 +38,6 @@ try {
                ON a.id = als.alternative_id
         LEFT JOIN sub_criterias sc 
                ON als.criteria_id = sc.criteria_id AND als.score_value = sc.value
-        WHERE a.deleted_at IS NULL
         ORDER BY a.id, als.criteria_id
     ");
     $stmt->execute();

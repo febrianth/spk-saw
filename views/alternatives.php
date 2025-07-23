@@ -191,17 +191,24 @@ try {
 
                         // Loop melalui setiap kriteria (dari header) untuk memastikan urutan kolom benar
                         criterias.forEach(crit => {
-                            // Cari skor untuk kriteria saat ini di dalam data alternatif
-                            // 'crit.id' adalah ID kriteria dari header
-                            // 'alt.scores' adalah objek skor dari alternatif saat ini
-                            const score = alt.scores[crit.id] ?? '-';
+                            let score = alt.scores[crit.id] ?? '-';
+                            let textAlign = 'text-left'; // Default alignment
 
-                            // Cek apakah skor adalah numerik untuk perataan teks
-                            const textAlign = isNaN(score) ? 'text-left' : 'text-right';
+                            if (score !== '-') {
+                                // Format nilai berdasarkan input_type kriteria
+                                if (crit.input_type === 'number') {
+                                    score = parseInt(score, 10);
+                                    textAlign = 'text-right';
+                                } else if (crit.input_type === 'decimal') {
+                                    // Biarkan sebagai desimal
+                                    textAlign = 'text-right';
+                                }
+                                // Untuk 'option', nilai sudah berupa string dan alignment tetap 'text-left'
+                            }
 
-                            // Tambahkan sel (td) ke baris
                             row += `<td class="${textAlign}">${score}</td>`;
                         });
+
 
                         // Tambahkan kolom Aksi
                         row += `<td class="text-center">
@@ -253,19 +260,22 @@ try {
                         fieldHtml += `<label for="crit_${crit.id}">${crit.name}</label>`;
 
                         // Cek apakah kriteria punya sub-kriteria
-                        if (crit.input_type == 'option') {
-                            // JIKA YA: Buat <select>
-                            fieldHtml += `<select class="form-control" name="scores[${crit.id}]" id="crit_${crit.id}" required>`;
-                            fieldHtml += `<option value="">-- Pilih --</option>`;
+                        if (crit.input_type === 'option') {
+                            // Tipe OPTION: Buat <select>
+                            fieldHtml += `<select class="form-control" name="scores[${crit.id}]" id="crit_${crit.id}" required>
+                                <option value="">-- Pilih --</option>`;
                             if (crit.sub_criterias && crit.sub_criterias.length > 0) {
                                 crit.sub_criterias.forEach(sub => {
                                     fieldHtml += `<option value="${sub.value}">${sub.name}</option>`;
                                 });
                             }
                             fieldHtml += `</select>`;
+                        } else if (crit.input_type === 'decimal') {
+                            // Tipe DECIMAL: Buat <input> untuk angka desimal
+                            fieldHtml += `<input type="number" class="form-control" name="scores[${crit.id}]" id="crit_${crit.id}" step="any" min="0" required>`;
                         } else {
-                            // JIKA TIDAK: Buat <input type="number">
-                            fieldHtml += `<input type="number" class="form-control" name="scores[${crit.id}]" id="crit_${crit.id}" min="1" required>`;
+                            // Tipe NUMBER (default): Buat <input> untuk bilangan bulat
+                            fieldHtml += `<input type="number" class="form-control" name="scores[${crit.id}]" id="crit_${crit.id}" step="1" min="1" pattern="[0-9]*" required>`;
                         }
 
                         fieldHtml += '</div>';
@@ -338,7 +348,8 @@ try {
             formStructureRes.data.forEach(crit => {
                 let fieldHtml = `<div class="form-group">
                                 <label for="crit_${crit.id}">${crit.name}</label>`;
-                if (crit.input_type == 'option') {
+                if (crit.input_type === 'option') {
+                    // Tipe OPTION: Buat <select>
                     fieldHtml += `<select class="form-control" name="scores[${crit.id}]" id="crit_${crit.id}" required>
                                 <option value="">-- Pilih --</option>`;
                     if (crit.sub_criterias && crit.sub_criterias.length > 0) {
@@ -347,8 +358,12 @@ try {
                         });
                     }
                     fieldHtml += `</select>`;
+                } else if (crit.input_type === 'decimal') {
+                    // Tipe DECIMAL: Buat <input> untuk angka desimal
+                    fieldHtml += `<input type="number" class="form-control" name="scores[${crit.id}]" id="crit_${crit.id}" step="any" min="0" required>`;
                 } else {
-                    fieldHtml += `<input type="number" class="form-control" name="scores[${crit.id}]" id="crit_${crit.id}" min="1" required>`;
+                    // Tipe NUMBER (default): Buat <input> untuk bilangan bulat
+                    fieldHtml += `<input type="number" class="form-control" name="scores[${crit.id}]" id="crit_${crit.id}" step="1" min="1" pattern="[0-9]*" required>`;
                 }
                 fieldHtml += '</div>';
                 $formFieldsContainer.append(fieldHtml);
@@ -356,7 +371,7 @@ try {
 
             // --- LANGKAH 2: Setelah form dibuat, ambil data spesifik untuk diisi ---
             $.ajax({
-                url: '../api/get-alternative-by-id.php', // API baru kita
+                url: '../api/get-alternative-by-id.php',
                 method: 'GET',
                 data: {
                     id: id
@@ -373,11 +388,22 @@ try {
 
                     // Isi field dinamis (skor)
                     if (data.scores) {
-                        for (const criteria_id in data.scores) {
-                            const score_value = data.scores[criteria_id];
-                            // Cari elemen form berdasarkan ID kriteria dan isi nilainya
-                            $(`#crit_${criteria_id}`).val(score_value);
-                        }
+                        // Loop melalui struktur kriteria untuk mendapatkan info 'input_type'
+                        formStructureRes.data.forEach(crit => {
+                            const criteria_id = crit.id;
+                            // Cek apakah ada skor untuk kriteria ini
+                            if (data.scores.hasOwnProperty(criteria_id)) {
+                                let score_value = data.scores[criteria_id];
+
+                                // Jika tipe input adalah 'number', ubah nilai menjadi bilangan bulat
+                                if (crit.input_type === 'number' && score_value !== null) {
+                                    score_value = parseInt(score_value);
+                                }
+
+                                // Set nilai ke dalam form
+                                $(`#crit_${criteria_id}`).val(score_value);
+                            }
+                        });
                     }
 
                     $('#modalAddData').modal('show');

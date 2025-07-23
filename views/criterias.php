@@ -127,8 +127,9 @@ if ($sum_weight == 1) {
                             <label for="input_type">Tipe</label>
                             <select class="form-control" name="input_type" id="input_type">
                                 <option value="">--Pilih Tipe--</option>
-                                <option value="number">Angka</option>
+                                <option value="number">Angka Bulat</option>
                                 <option value="option">Pilihan</option>
+                                <option value="decimal">Desimal</option>
                             </select>
                         </div>
 
@@ -195,13 +196,21 @@ if ($sum_weight == 1) {
                     $tbody.empty();
 
                     res.data.forEach((alt, index) => {
+                        var tipe = '-';
+                        if (alt.input_type == 'option') {
+                            tipe = 'Pilihan';
+                        } else if (alt.input_type == 'number') {
+                            tipe = 'Angka Bulat';
+                        } else {
+                            tipe = 'Desimal';
+                        }
                         $tbody.append(`
                         <tr>
                             <td class="text-center">${index + 1}</td>
                             <td class="text-center">${alt.code}</td>
                             <td class="text-left">${alt.name}</td>
                             <td class="text-center">${alt.attribute}</td>
-                            <td class="text-center">${alt.input_type == 'option' ? 'Pilihan' : 'Angka'}</td>
+                            <td class="text-center">${tipe}</td>
                             <td class="text-right">${alt.weight}</td>
                             <td class="text-center">
                                <button class="btn btn-sm btn-warning" onclick="handleEdit(${alt.id})" title="Edit"><i class="fas fa-fw fa-pen"></i></button>

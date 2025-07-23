@@ -30,7 +30,7 @@ try {
         FROM alternatives a
         JOIN scores als 
           ON a.id = als.alternative_id
-        WHERE a.deleted_at IS NULL ORDER BY a.id, als.criteria_id
+        ORDER BY a.id, als.criteria_id
     ");
     $stmt->execute();
     $rawScores = $stmt->fetchAll(PDO::FETCH_ASSOC);

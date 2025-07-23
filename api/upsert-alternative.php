@@ -12,19 +12,28 @@ $scores = $_POST['scores'] ?? [];
 
 // --- Validasi Input ---
 if (empty($name) || empty($code)) {
-    echo json_encode(["status" => "error", "message" => "Kode dan Nama Alternatif harus diisi."]);
+    echo json_encode([
+        "status" => "error",
+        "message" => "Kode dan Nama Alternatif harus diisi."
+    ]);
     exit;
 }
 
 if (empty($scores) || !is_array($scores)) {
-    echo json_encode(["status" => "error", "message" => "Data nilai kriteria tidak boleh kosong."]);
+    echo json_encode([
+        "status" => "error",
+        "message" => "Data nilai kriteria tidak boleh kosong."
+    ]);
     exit;
 }
 
 // Validasi bahwa semua nilai kriteria telah diisi
 foreach ($scores as $score_value) {
     if ($score_value === '' || $score_value === null) {
-        echo json_encode(["status" => "error", "message" => "Semua nilai kriteria harus diisi."]);
+        echo json_encode([
+            "status" => "error",
+            "message" => "Semua nilai kriteria harus diisi."
+        ]);
         exit;
     }
 }
